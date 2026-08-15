@@ -242,70 +242,111 @@ app.post(
     requireAdmin,
     upload.single("flyer"),
     (req, res) => {
-        const events = readEvents();
 
-        const event = {
-            id:
-                "upcoming-" +
-                Date.now() +
-                "-" +
-                Math.random()
-                    .toString(36)
-                    .slice(2, 8),
+        try {
 
-            title: String(
-                req.body.title || ""
-            ).trim(),
+            console.log("=== CREATE UPCOMING EVENT ===");
 
-            date: String(
-                req.body.date || ""
-            ).trim(),
+            console.log("Body:", req.body);
 
-            time: String(
-                req.body.time || ""
-            ).trim(),
+            console.log(
+                "Uploaded file:",
+                req.file
+                    ? {
+                        filename: req.file.filename,
+                        path: req.file.path,
+                        size: req.file.size
+                    }
+                    : "No flyer"
+            );
 
-            location: String(
-                req.body.location || ""
-            ).trim(),
+            const events =
+                readEvents();
 
-            description: String(
-                req.body.description || ""
-            ).trim(),
+            console.log(
+                "Existing events:",
+                events
+            );
 
-            activities: parseActivities(
-                req.body.activities
-            ),
+            const event = {
 
-            joinUrl: String(
-                req.body.joinUrl || ""
-            ).trim(),
+                id:
+                    Date.now().toString(),
 
-            flyer: req.file
-                ? `/uploads/${req.file.filename}`
-                : null
-        };
+                title:
+                    req.body.title || "",
 
-        if (!event.title) {
-            if (req.file) {
-                deleteLocalFile(
-                    `/uploads/${req.file.filename}`
-                );
-            }
+                date:
+                    req.body.date || "",
 
-            return res.status(400).json({
-                error: "Event title is required."
+                time:
+                    req.body.time || "",
+
+                location:
+                    req.body.location || "",
+
+                description:
+                    req.body.description || "",
+
+                activities:
+                    req.body.activities
+                        ? req.body.activities
+                            .split("\n")
+                            .map(x => x.trim())
+                            .filter(Boolean)
+                        : [],
+
+                joinUrl:
+                    req.body.joinUrl || "",
+
+                flyer:
+                    req.file
+                        ? `/uploads/${req.file.filename}`
+                        : ""
+            };
+
+            console.log(
+                "New event:",
+                event
+            );
+
+            events.upcoming.push(event);
+
+            console.log(
+                "Writing events..."
+            );
+
+            writeEvents(events);
+
+            console.log(
+                "Event successfully written."
+            );
+
+            res.json({
+                success: true,
+                event
+            });
+
+        } catch (error) {
+
+            console.error(
+                "!!! CREATE UPCOMING EVENT FAILED !!!"
+            );
+
+            console.error(
+                error
+            );
+
+            console.error(
+                error.stack
+            );
+
+            res.status(500).json({
+                error:
+                    error.message ||
+                    "Internal server error"
             });
         }
-
-        events.upcoming.push(event);
-
-        writeEvents(events);
-
-        res.json({
-            success: true,
-            event
-        });
     }
 );
 

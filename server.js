@@ -30,9 +30,46 @@ if (!fs.existsSync(EVENTS_FILE)) {
 }
 
 function readEvents() {
+
     try {
-        return JSON.parse(fs.readFileSync(EVENTS_FILE, "utf8"));
-    } catch {
+
+        if (!fs.existsSync(EVENTS_FILE)) {
+
+            return {
+                upcoming: [],
+                past: []
+            };
+
+        }
+
+        const data =
+            fs.readFileSync(
+                EVENTS_FILE,
+                "utf8"
+            );
+
+        const events =
+            JSON.parse(data);
+
+        return {
+            upcoming:
+                Array.isArray(events.upcoming)
+                    ? events.upcoming
+                    : [],
+
+            past:
+                Array.isArray(events.past)
+                    ? events.past
+                    : []
+        };
+
+    } catch (error) {
+
+        console.error(
+            "Could not read events.json:",
+            error
+        );
+
         return {
             upcoming: [],
             past: []
@@ -262,6 +299,14 @@ app.post(
 
             const events =
                 readEvents();
+
+            if (!events.upcoming) {
+                events.upcoming = [];
+            }
+
+            if (!events.past) {
+                events.past = [];
+            }
 
             console.log(
                 "Existing events:",

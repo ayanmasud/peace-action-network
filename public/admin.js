@@ -520,22 +520,19 @@ async function saveUpcoming(event) {
 
     event.preventDefault();
 
-
     const id =
         $("upcoming-id").value;
 
+    const form =
+        $("upcoming-form");
 
     const formData =
-        new FormData(
-            $("upcoming-form")
-        );
-
+        new FormData(form);
 
     const removeFlyer =
         document.getElementById(
             "remove-flyer"
         );
-
 
     if (
         removeFlyer &&
@@ -548,52 +545,79 @@ async function saveUpcoming(event) {
         );
     }
 
-
     const url = id
         ? `/api/admin/upcoming/${encodeURIComponent(id)}`
         : "/api/admin/upcoming";
 
+    try {
 
-    const response =
-        await fetch(url, {
+        const response =
+            await fetch(url, {
 
-            method:
-                id ? "PUT" : "POST",
+                method:
+                    id ? "PUT" : "POST",
 
-            body: formData
-        });
+                body: formData
 
+            });
 
-    const data =
-        await response
-            .json()
-            .catch(() => ({}));
+        const text =
+            await response.text();
 
+        let data = {};
 
-    if (!response.ok) {
+        try {
+            data = text
+                ? JSON.parse(text)
+                : {};
+        } catch {
+            console.error(
+                "Server returned non-JSON response:",
+                text
+            );
+        }
+
+        if (!response.ok) {
+
+            console.error(
+                "Save event failed:",
+                response.status,
+                data,
+                text
+            );
+
+            showMessage(
+                data.error ||
+                `Could not save event. Server returned ${response.status}.`,
+                "error"
+            );
+
+            return;
+        }
 
         showMessage(
-            data.error ||
-            "Could not save event.",
-            "error"
+            id
+                ? "Upcoming event updated."
+                : "Upcoming event added.",
+            "success"
         );
 
-        return;
+        closeUpcomingForm();
+
+        await loadEvents();
+
+    } catch (error) {
+
+        console.error(
+            "Network error while saving event:",
+            error
+        );
+
+        showMessage(
+            "Could not connect to the server.",
+            "error"
+        );
     }
-
-
-    showMessage(
-        id
-            ? "Upcoming event updated."
-            : "Upcoming event added.",
-
-        "success"
-    );
-
-
-    closeUpcomingForm();
-
-    await loadEvents();
 }
 
 

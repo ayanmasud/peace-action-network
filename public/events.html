@@ -1,122 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <title>Events | Peace Action Network</title>
 
-    <title>
-        Events | Peace Action Network
-    </title>
-
-    <link
-        rel="stylesheet"
-        href="styles.css"
-    >
+    <link rel="stylesheet" href="styles.css">
 
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     >
-
 </head>
-
 
 <body>
 
+    <!-- =========================================
+         HEADER / NAVIGATION
+    ========================================== -->
+    <header class="site-header">
+        <div class="container nav-wrap">
 
-<header class="page-header">
+            <a href="index.html" class="brand">
+                Peace Action Network
+            </a>
 
-<div class="container">
+            <button
+                class="menu-toggle"
+                aria-expanded="false"
+                aria-label="Open navigation menu"
+                type="button"
+            >
+                <i class="fas fa-bars"></i>
+            </button>
 
+            <nav class="main-nav">
 
-<div class="logo-nav-container">
-
-    <div class="logo">
-
-        <h1>
-            Peace Action Network
-        </h1>
-
-    </div>
-
-
-    <button
-        class="mobile-menu-btn"
-        aria-label="Toggle menu"
-    >
-
-        <i class="fas fa-bars"></i>
-
-    </button>
-
-
-    <nav>
-
-        <ul>
-
-            <li>
                 <a href="index.html">
                     Home
                 </a>
-            </li>
 
+                <!-- EVENTS DROPDOWN -->
+                <div class="nav-dropdown">
 
-            <li class="nav-dropdown">
-
-                <a
-                    href="events.html"
-                    class="active"
-                >
-
-                    Events
-
-                    <i
-                        class="fas fa-chevron-down nav-chevron"
-                    ></i>
-
-                </a>
-
-
-                <div class="dropdown-menu">
-
-                    <a
-                        href="#upcoming-events"
+                    <button
+                        type="button"
+                        class="nav-dropdown-toggle active"
+                        aria-expanded="false"
                     >
-                        Upcoming Events
-                    </a>
+                        Events
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
 
-                    <a
-                        href="#past-events"
-                    >
-                        Past Events
-                    </a>
+                    <div class="nav-dropdown-menu">
+
+                        <a href="#upcoming-events">
+                            Upcoming Events
+                        </a>
+
+                        <a href="#past-events">
+                            Past Events
+                        </a>
+
+                    </div>
 
                 </div>
 
-            </li>
-
-
-            <li>
                 <a href="volunteer.html">
                     Volunteer
                 </a>
-            </li>
 
-
-            <li>
                 <a href="contact.html">
                     Contact
                 </a>
-            </li>
-
-
-            <li>
 
                 <a
                     href="https://www.zeffy.com"
@@ -127,238 +84,255 @@
                     Donate
                 </a>
 
-            </li>
+            </nav>
 
-        </ul>
-
-    </nav>
-
-</div>
-
-
-<div class="page-title">
-
-    <h2>
-        Events
-    </h2>
-
-    <p>
-        Join us in creating welcoming
-        spaces for refugees in our community.
-    </p>
-
-</div>
-
-
-</div>
-
-</header>
-
-
-
-<main class="page-main">
-
-
-<!-- =========================================
-     UPCOMING
-========================================= -->
-
-<section
-    id="upcoming-events"
-    class="events-section"
->
-
-<div class="container">
-
-    <div class="section-heading">
-
-        <span>
-            What's happening next
-        </span>
-
-        <h2>
-            Upcoming Events
-        </h2>
-
-    </div>
-
-
-    <div
-        id="upcoming-events-list"
-        class="upcoming-events-list"
-    >
-
-        <div class="loading-state">
-            Loading events...
         </div>
-
-    </div>
-
-</div>
-
-</section>
+    </header>
 
 
+    <!-- =========================================
+         PAGE HERO
+    ========================================== -->
+    <section class="page-hero">
 
-<!-- =========================================
-     PAST
-========================================= -->
+        <div class="container">
 
-<section
-    id="past-events"
-    class="past-events"
->
+            <p class="eyebrow">
+                Community
+            </p>
 
-<div class="container">
-
-    <div class="section-heading">
-
-        <span>
-            Our community in action
-        </span>
-
-        <h2>
-            Past Events
-        </h2>
-
-    </div>
-
-
-    <div
-        id="past-events-list"
-        class="past-events-list"
-    >
-
-        <div class="loading-state">
-            Loading past events...
-        </div>
-
-    </div>
-
-</div>
-
-</section>
-
-
-</main>
-
-
-
-<footer>
-
-<div class="container">
-
-<div class="footer-grid">
-
-
-<div class="footer-about">
-
-    <h3>
-        Peace Action Network
-    </h3>
-
-    <p>
-        Helping refugees integrate into
-        Oregon communities through resources,
-        friendship, and support.
-    </p>
-
-</div>
-
-
-<div class="footer-links">
-
-    <h3>
-        Quick Links
-    </h3>
-
-    <ul>
-
-        <li>
-            <a href="index.html">
-                Home
-            </a>
-        </li>
-
-        <li>
-            <a href="events.html">
+            <h1>
                 Events
-            </a>
-        </li>
+            </h1>
 
-        <li>
-            <a href="volunteer.html">
-                Volunteer
-            </a>
-        </li>
+            <p>
+                Join us in creating welcoming spaces
+                for refugees throughout Oregon.
+            </p>
 
-        <li>
-            <a href="contact.html">
-                Contact
-            </a>
-        </li>
+        </div>
 
-        <li>
-            <a
-                href="https://www.zeffy.com"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                Donate
-            </a>
-        </li>
-
-    </ul>
-
-</div>
+    </section>
 
 
-<div class="footer-contact">
-
-    <h3>
-        Contact Us
-    </h3>
-
-    <p>
-        <i class="fas fa-map-marker-alt"></i>
-        14924 NW Deerfoot Lane,
-        Portland, OR
-    </p>
-
-    <p>
-        <i class="fas fa-phone"></i>
-        (503) 531-0910
-    </p>
-
-    <p>
-        <i class="fas fa-envelope"></i>
-        pan.org.us@gmail.com
-    </p>
-
-</div>
+    <main class="page-main">
 
 
-</div>
+        <!-- =========================================
+             UPCOMING EVENTS
+        ========================================== -->
+        <section
+            id="upcoming-events"
+            class="events-section"
+        >
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <span>
+                        What's happening next
+                    </span>
+
+                    <h2>
+                        Upcoming Events
+                    </h2>
+
+                </div>
 
 
-<div class="footer-bottom">
+                <!--
+                    events.js will automatically
+                    populate this section from
+                    the events stored on the server.
+                -->
+                <div
+                    id="upcoming-events-list"
+                    class="upcoming-events-list"
+                >
 
-    <p>
-        Peace Action Network
-        <span id="current-year"></span>
-    </p>
+                    <div class="loading-state">
+                        Loading events...
+                    </div>
 
-</div>
+                </div>
 
+            </div>
 
-</div>
-
-</footer>
+        </section>
 
 
-<script src="script.js"></script>
-<script src="events.js"></script>
+
+        <!-- =========================================
+             PAST EVENTS
+        ========================================== -->
+        <section
+            id="past-events"
+            class="past-events"
+        >
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <span>
+                        Our community in action
+                    </span>
+
+                    <h2>
+                        Past Events
+                    </h2>
+
+                </div>
+
+
+                <!--
+                    events.js will automatically
+                    populate this section from
+                    the events stored on the server.
+                -->
+                <div
+                    id="past-events-list"
+                    class="past-events-list"
+                >
+
+                    <div class="loading-state">
+                        Loading past events...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+    <!-- =========================================
+         FOOTER
+    ========================================== -->
+    <footer>
+
+        <div class="container">
+
+            <div class="footer-grid">
+
+
+                <!-- ABOUT -->
+                <div class="footer-about">
+
+                    <h3>
+                        Peace Action Network
+                    </h3>
+
+                    <p>
+                        Helping refugees integrate into
+                        Oregon communities through resources,
+                        friendship, and support.
+                    </p>
+
+                </div>
+
+
+                <!-- LINKS -->
+                <div class="footer-links">
+
+                    <h3>
+                        Quick Links
+                    </h3>
+
+                    <ul>
+
+                        <li>
+                            <a href="index.html">
+                                Home
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="events.html">
+                                Events
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="volunteer.html">
+                                Volunteer
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="contact.html">
+                                Contact
+                            </a>
+                        </li>
+
+                        <li>
+                            <a
+                                href="https://www.zeffy.com"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Donate
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </div>
+
+
+                <!-- CONTACT -->
+                <div class="footer-contact">
+
+                    <h3>
+                        Contact Us
+                    </h3>
+
+                    <p>
+                        <i class="fas fa-map-marker-alt"></i>
+                        14924 NW Deerfoot Lane,
+                        Portland, OR
+                    </p>
+
+                    <p>
+                        <i class="fas fa-phone"></i>
+                        (503) 531-0910
+                    </p>
+
+                    <p>
+                        <i class="fas fa-envelope"></i>
+                        pan.org.us@gmail.com
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="footer-bottom">
+
+                <p>
+                    Peace Action Network
+                    <span id="current-year"></span>
+                </p>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <!-- =========================================
+         JAVASCRIPT
+    ========================================== -->
+
+    <script src="script.js"></script>
+    <script src="events.js"></script>
 
 </body>
-
 </html>

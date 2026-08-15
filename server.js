@@ -191,8 +191,8 @@ app.delete("/api/admin/events/:id", requireAdmin, (req, res) => {
   res.json({ success: true });
 });
 
-app.get("*", (_req, res) => {
-  res.sendFile(path.join(PUBLIC_DIR, "index.html"));
+app.use((req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.listen(PORT, () => {

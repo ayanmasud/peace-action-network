@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Admin | Peace Action Network</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="admin-page">
+<header class="site-header">
+  <div class="container nav-wrap">
+    <a class="brand" href="index.html">Peace Action Network</a>
+    <a href="events.html" class="admin-site-link">View Website <i class="fas fa-arrow-right"></i></a>
+  </div>
+</header>
+
+<main>
+  <section class="page-hero admin-hero">
+    <div class="container">
+      <span class="eyebrow">Private Area</span>
+      <h1>Event Manager</h1>
+      <p>Add, edit, and remove past events and their photos.</p>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <div class="container admin-container">
+      <div id="login-panel" class="admin-panel">
+        <h2>Administrator Login</h2>
+        <p>Enter the administrator password to manage the Past Events gallery.</p>
+        <form id="login-form">
+          <label for="admin-password">Password</label>
+          <input id="admin-password" type="password" required autocomplete="current-password">
+          <button class="button button-primary" type="submit">Log In</button>
+          <p id="login-error" class="form-error"></p>
+        </form>
+      </div>
+
+      <div id="admin-panel" class="hidden">
+        <div class="admin-toolbar">
+          <div>
+            <span class="eyebrow">Dashboard</span>
+            <h2>Past Events</h2>
+          </div>
+          <button id="logout-btn" class="button button-light">Log Out</button>
+        </div>
+
+        <div class="admin-panel">
+          <h3 id="form-title">Add a Past Event</h3>
+          <form id="event-form" enctype="multipart/form-data">
+            <input type="hidden" id="event-id">
+            <div class="form-grid">
+              <div>
+                <label for="event-title">Event title</label>
+                <input id="event-title" name="title" type="text" placeholder="e.g. Community Iftar" required>
+              </div>
+              <div>
+                <label for="event-date">Date</label>
+                <input id="event-date" name="date" type="date" required>
+              </div>
+            </div>
+
+            <label for="event-description">Description <span class="optional">(optional)</span></label>
+            <textarea id="event-description" name="description" rows="3" placeholder="A short description of the event..."></textarea>
+
+            <div id="new-images-area">
+              <label for="event-images">Photos</label>
+              <input id="event-images" name="images" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+              <small>You can select multiple photos at once. Maximum 10 MB per image.</small>
+              <div id="image-preview" class="image-preview"></div>
+            </div>
+
+            <div class="form-actions">
+              <button class="button button-primary" type="submit" id="save-event-btn">Add Event</button>
+              <button class="button button-light hidden" type="button" id="cancel-edit-btn">Cancel Edit</button>
+            </div>
+            <p id="event-message" class="form-message"></p>
+          </form>
+        </div>
+
+        <div>
+          <div id="admin-events-list" class="admin-events-list"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="admin.js"></script>
+</body>
+</html>

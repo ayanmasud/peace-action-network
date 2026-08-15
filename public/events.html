@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Events | Peace Action Network</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container nav-wrap">
+    <a class="brand" href="index.html">Peace Action Network</a>
+    <button class="menu-toggle" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></button>
+    <nav class="main-nav">
+      <a href="index.html">Home</a>
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-toggle active" aria-expanded="false">Events <i class="fas fa-chevron-down"></i></button>
+        <div class="nav-dropdown-menu">
+          <a href="#upcoming">Upcoming Events</a>
+          <a href="#past">Past Events</a>
+        </div>
+      </div>
+      <a href="volunteer.html">Volunteer</a>
+      <a href="contact.html">Contact</a>
+      <a href="https://www.zeffy.com" target="_blank" rel="noopener noreferrer" class="donate-btn">Donate</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="page-hero">
+    <div class="container">
+      <span class="eyebrow">Peace Action Network</span>
+      <h1>Events</h1>
+      <p>Join us in creating welcoming spaces for refugees in our community.</p>
+    </div>
+  </section>
+
+  <section id="upcoming" class="content-section anchor-section">
+    <div class="container">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">What's Next</span>
+          <h2>Upcoming Events</h2>
+        </div>
+      </div>
+
+      <div class="upcoming-list">
+        <article class="upcoming-card">
+          <div class="upcoming-date"><strong>27</strong><span>JUL<br>2025</span></div>
+          <div>
+            <h3>Senior Summer Picnic</h3>
+            <p class="event-meta"><i class="far fa-clock"></i> 12:00 PM &nbsp; <i class="fas fa-map-marker-alt"></i> TBD</p>
+            <p>Join us for lunch, bingo, and a chance to spend time together as a community.</p>
+            <a href="https://www.google.com" class="text-link">Learn More <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </article>
+
+        <article class="upcoming-card">
+          <div class="upcoming-date"><strong>—</strong><span>TBD<br>2025</span></div>
+          <div>
+            <h3>Tutoring Refugee Kids</h3>
+            <p class="event-meta"><i class="far fa-clock"></i> TBD &nbsp; <i class="fas fa-map-marker-alt"></i> Remote</p>
+            <p>Help refugee children develop English language skills and receive homework support.</p>
+            <a href="https://www.google.com" class="text-link">Learn More <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="past" class="past-events-section anchor-section">
+    <div class="container">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Our Community</span>
+          <h2>Past Events</h2>
+        </div>
+        <p>Take a look back at some of our previous programs and activities.</p>
+      </div>
+      <div id="past-events-grid" class="past-events-grid">
+        <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading past events...</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container footer-grid">
+    <div>
+      <h3>Peace Action Network</h3>
+      <p>Helping refugees integrate into Oregon communities through resources, friendship, and support.</p>
+    </div>
+    <div>
+      <h3>Quick Links</h3>
+      <a href="index.html">Home</a>
+      <a href="#upcoming">Upcoming Events</a>
+      <a href="#past">Past Events</a>
+      <a href="volunteer.html">Volunteer</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div>
+      <h3>Contact</h3>
+      <p>14924 NW Deerfoot Lane<br>Portland, OR 97229</p>
+      <p>(503) 531-0910<br>pan.org.us@gmail.com</p>
+    </div>
+  </div>
+  <div class="footer-bottom">Peace Action Network <span id="current-year"></span></div>
+</footer>
+<script src="script.js"></script>
+<script src="events.js"></script>
+</body>
+</html>

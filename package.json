@@ -1,0 +1,16 @@
+{
+  "name": "peace-action-network-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Peace Action Network website with an admin-managed past events gallery.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "express-session": "^1.18.2",
+    "multer": "^2.0.2"
+  }
+}

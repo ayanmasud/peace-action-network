@@ -1,203 +1,703 @@
 const express = require("express");
 const session = require("express-session");
 const multer = require("multer");
-const fs = require("fs");
 const path = require("path");
-const crypto = require("crypto");
+const fs = require("fs");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "change-this-password";
 
 const PUBLIC_DIR = path.join(__dirname, "public");
-const UPLOAD_DIR = path.join(PUBLIC_DIR, "uploads");
 const DATA_DIR = path.join(__dirname, "data");
+const UPLOAD_DIR = path.join(PUBLIC_DIR, "uploads");
 const EVENTS_FILE = path.join(DATA_DIR, "events.json");
 
-fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 fs.mkdirSync(DATA_DIR, { recursive: true });
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 if (!fs.existsSync(EVENTS_FILE)) {
-  fs.writeFileSync(EVENTS_FILE, JSON.stringify([], null, 2));
+    fs.writeFileSync(
+        EVENTS_FILE,
+        JSON.stringify(
+            {
+                upcoming: [],
+                past: []
+            },
+            null,
+            2
+        )
+    );
 }
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(PUBLIC_DIR));
-
-app.use(session({
-  secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex"),
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 1000 * 60 * 60 * 8
-  }
-}));
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const safeExt = [".jpg", ".jpeg", ".png", ".webp", ".gif"].includes(ext) ? ext : ".jpg";
-    cb(null, `${Date.now()}-${crypto.randomBytes(6).toString("hex")}${safeExt}`);
-  }
-});
-
-const upload = multer({
-  storage,
-  limits: { files: 30, fileSize: 10 * 1024 * 1024 },
-  fileFilter: (_req, file, cb) => {
-    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-    cb(null, allowed.includes(file.mimetype));
-  }
-});
-
 function readEvents() {
-  try {
-    return JSON.parse(fs.readFileSync(EVENTS_FILE, "utf8"));
-  } catch {
-    return [];
-  }
+    try {
+        return JSON.parse(fs.readFileSync(EVENTS_FILE, "utf8"));
+    } catch {
+        return {
+            upcoming: [],
+            past: []
+        };
+    }
 }
 
 function writeEvents(events) {
-  fs.writeFileSync(EVENTS_FILE, JSON.stringify(events, null, 2));
+    fs.writeFileSync(
+        EVENTS_FILE,
+        JSON.stringify(events, null, 2)
+    );
+}
+
+function deleteLocalFile(publicPath) {
+    if (!publicPath) return;
+
+    if (!publicPath.startsWith("/uploads/")) {
+        return;
+    }
+
+    const filename = path.basename(publicPath);
+    const filePath = path.join(UPLOAD_DIR, filename);
+
+    if (fs.existsSync(filePath)) {
+        try {
+            fs.unlinkSync(filePath);
+        } catch (error) {
+            console.error("Could not delete file:", error);
+        }
+    }
 }
 
 function requireAdmin(req, res, next) {
-  if (req.session && req.session.isAdmin) return next();
-  res.status(401).json({ error: "You must be logged in as an administrator." });
+    if (req.session && req.session.isAdmin) {
+        return next();
+    }
+
+    if (req.path === "/admin.html") {
+        return res.redirect("/admin-login.html");
+    }
+
+    return res.status(401).json({
+        error: "Unauthorized"
+    });
 }
 
-function removeUploadedFile(imageUrl) {
-  if (!imageUrl || !imageUrl.startsWith("/uploads/")) return;
-  const filename = path.basename(imageUrl);
-  const fullPath = path.join(UPLOAD_DIR, filename);
-  if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+function parseActivities(value) {
+    if (!value) {
+        return [];
+    }
+
+    return String(value)
+        .split(/\r?\n/)
+        .map(item => item.trim())
+        .filter(Boolean);
 }
+
+/* --------------------------------------------------
+   MIDDLEWARE
+-------------------------------------------------- */
+
+app.use(express.json({ limit: "2mb" }));
+app.use(express.urlencoded({ extended: true }));
+
+app.use(
+    session({
+        secret:
+            process.env.SESSION_SECRET ||
+            "CHANGE_THIS_SESSION_SECRET",
+
+        resave: false,
+        saveUninitialized: false,
+
+        cookie: {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 1000 * 60 * 60 * 8
+        }
+    })
+);
+
+/* --------------------------------------------------
+   IMAGE UPLOAD CONFIGURATION
+-------------------------------------------------- */
+
+const storage = multer.diskStorage({
+    destination: (_req, _file, callback) => {
+        callback(null, UPLOAD_DIR);
+    },
+
+    filename: (_req, file, callback) => {
+        const extension =
+            path.extname(file.originalname).toLowerCase();
+
+        const baseName =
+            path
+                .basename(file.originalname, extension)
+                .replace(/[^a-z0-9-_]/gi, "-")
+                .replace(/-+/g, "-")
+                .slice(0, 60) || "image";
+
+        const filename =
+            `${Date.now()}-${baseName}${extension}`;
+
+        callback(null, filename);
+    }
+});
+
+const upload = multer({
+    storage,
+
+    limits: {
+        fileSize: 15 * 1024 * 1024
+    },
+
+    fileFilter: (_req, file, callback) => {
+        const allowedTypes = [
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+            "image/gif"
+        ];
+
+        if (allowedTypes.includes(file.mimetype)) {
+            callback(null, true);
+        } else {
+            callback(
+                new Error(
+                    "Only JPG, PNG, WebP, and GIF images are allowed."
+                )
+            );
+        }
+    }
+});
+
+/* --------------------------------------------------
+   PUBLIC EVENTS API
+-------------------------------------------------- */
 
 app.get("/api/events", (_req, res) => {
-  const events = readEvents().sort((a, b) => {
-    return new Date(b.date) - new Date(a.date);
-  });
-  res.json(events);
+    res.json(readEvents());
+});
+
+/* --------------------------------------------------
+   ADMIN AUTHENTICATION
+-------------------------------------------------- */
+
+app.get("/api/admin/status", (req, res) => {
+    res.json({
+        authenticated: !!(
+            req.session &&
+            req.session.isAdmin
+        )
+    });
 });
 
 app.post("/api/admin/login", (req, res) => {
-  const { password } = req.body;
-  if (!password || password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: "Incorrect password." });
-  }
-  req.session.isAdmin = true;
-  res.json({ success: true });
+    const password = String(
+        req.body.password || ""
+    );
+
+    const correctPassword =
+        process.env.ADMIN_PASSWORD;
+
+    if (!correctPassword) {
+        return res.status(500).json({
+            error:
+                "ADMIN_PASSWORD has not been configured on Render."
+        });
+    }
+
+    if (password !== correctPassword) {
+        return res.status(401).json({
+            error: "Incorrect password."
+        });
+    }
+
+    req.session.isAdmin = true;
+
+    res.json({
+        success: true
+    });
 });
 
-app.post("/api/admin/logout", requireAdmin, (req, res) => {
-  req.session.destroy(() => res.json({ success: true }));
+app.post(
+    "/api/admin/logout",
+    requireAdmin,
+    (req, res) => {
+        req.session.destroy(() => {
+            res.json({
+                success: true
+            });
+        });
+    }
+);
+
+/* --------------------------------------------------
+   UPCOMING EVENTS
+-------------------------------------------------- */
+
+app.post(
+    "/api/admin/upcoming",
+    requireAdmin,
+    upload.single("flyer"),
+    (req, res) => {
+        const events = readEvents();
+
+        const event = {
+            id:
+                "upcoming-" +
+                Date.now() +
+                "-" +
+                Math.random()
+                    .toString(36)
+                    .slice(2, 8),
+
+            title: String(
+                req.body.title || ""
+            ).trim(),
+
+            date: String(
+                req.body.date || ""
+            ).trim(),
+
+            time: String(
+                req.body.time || ""
+            ).trim(),
+
+            location: String(
+                req.body.location || ""
+            ).trim(),
+
+            description: String(
+                req.body.description || ""
+            ).trim(),
+
+            activities: parseActivities(
+                req.body.activities
+            ),
+
+            joinUrl: String(
+                req.body.joinUrl || ""
+            ).trim(),
+
+            flyer: req.file
+                ? `/uploads/${req.file.filename}`
+                : null
+        };
+
+        if (!event.title) {
+            if (req.file) {
+                deleteLocalFile(
+                    `/uploads/${req.file.filename}`
+                );
+            }
+
+            return res.status(400).json({
+                error: "Event title is required."
+            });
+        }
+
+        events.upcoming.push(event);
+
+        writeEvents(events);
+
+        res.json({
+            success: true,
+            event
+        });
+    }
+);
+
+app.put(
+    "/api/admin/upcoming/:id",
+    requireAdmin,
+    upload.single("flyer"),
+    (req, res) => {
+        const events = readEvents();
+
+        const event =
+            events.upcoming.find(
+                item =>
+                    item.id === req.params.id
+            );
+
+        if (!event) {
+            return res.status(404).json({
+                error:
+                    "Upcoming event not found."
+            });
+        }
+
+        if (req.body.title !== undefined) {
+            event.title =
+                String(req.body.title).trim();
+        }
+
+        if (req.body.date !== undefined) {
+            event.date =
+                String(req.body.date).trim();
+        }
+
+        if (req.body.time !== undefined) {
+            event.time =
+                String(req.body.time).trim();
+        }
+
+        if (
+            req.body.location !== undefined
+        ) {
+            event.location =
+                String(req.body.location).trim();
+        }
+
+        if (
+            req.body.description !== undefined
+        ) {
+            event.description =
+                String(
+                    req.body.description
+                ).trim();
+        }
+
+        if (
+            req.body.activities !== undefined
+        ) {
+            event.activities =
+                parseActivities(
+                    req.body.activities
+                );
+        }
+
+        if (
+            req.body.joinUrl !== undefined
+        ) {
+            event.joinUrl =
+                String(
+                    req.body.joinUrl
+                ).trim();
+        }
+
+        /* Replace flyer */
+
+        if (req.file) {
+            deleteLocalFile(event.flyer);
+
+            event.flyer =
+                `/uploads/${req.file.filename}`;
+        }
+
+        /* Remove flyer */
+
+        if (
+            req.body.removeFlyer === "true"
+        ) {
+            deleteLocalFile(event.flyer);
+
+            event.flyer = null;
+        }
+
+        if (!event.title) {
+            return res.status(400).json({
+                error:
+                    "Event title is required."
+            });
+        }
+
+        writeEvents(events);
+
+        res.json({
+            success: true,
+            event
+        });
+    }
+);
+
+app.delete(
+    "/api/admin/upcoming/:id",
+    requireAdmin,
+    (req, res) => {
+        const events = readEvents();
+
+        const index =
+            events.upcoming.findIndex(
+                event =>
+                    event.id ===
+                    req.params.id
+            );
+
+        if (index === -1) {
+            return res.status(404).json({
+                error:
+                    "Upcoming event not found."
+            });
+        }
+
+        const [event] =
+            events.upcoming.splice(
+                index,
+                1
+            );
+
+        deleteLocalFile(event.flyer);
+
+        writeEvents(events);
+
+        res.json({
+            success: true
+        });
+    }
+);
+
+/* --------------------------------------------------
+   PAST EVENTS
+-------------------------------------------------- */
+
+app.post(
+    "/api/admin/past",
+    requireAdmin,
+    upload.array("photos", 30),
+    (req, res) => {
+        const events = readEvents();
+
+        const event = {
+            id:
+                "past-" +
+                Date.now() +
+                "-" +
+                Math.random()
+                    .toString(36)
+                    .slice(2, 8),
+
+            title: String(
+                req.body.title || ""
+            ).trim(),
+
+            date: String(
+                req.body.date || ""
+            ).trim(),
+
+            description: String(
+                req.body.description || ""
+            ).trim(),
+
+            photos: (req.files || []).map(
+                file =>
+                    `/uploads/${file.filename}`
+            )
+        };
+
+        if (!event.title) {
+            (req.files || []).forEach(
+                file =>
+                    deleteLocalFile(
+                        `/uploads/${file.filename}`
+                    )
+            );
+
+            return res.status(400).json({
+                error:
+                    "Event title is required."
+            });
+        }
+
+        events.past.push(event);
+
+        writeEvents(events);
+
+        res.json({
+            success: true,
+            event
+        });
+    }
+);
+
+app.put(
+    "/api/admin/past/:id",
+    requireAdmin,
+    upload.array("photos", 30),
+    (req, res) => {
+        const events = readEvents();
+
+        const event =
+            events.past.find(
+                item =>
+                    item.id === req.params.id
+            );
+
+        if (!event) {
+            return res.status(404).json({
+                error:
+                    "Past event not found."
+            });
+        }
+
+        if (req.body.title !== undefined) {
+            event.title =
+                String(req.body.title).trim();
+        }
+
+        if (req.body.date !== undefined) {
+            event.date =
+                String(req.body.date).trim();
+        }
+
+        if (
+            req.body.description !== undefined
+        ) {
+            event.description =
+                String(
+                    req.body.description
+                ).trim();
+        }
+
+        const newPhotos =
+            (req.files || []).map(
+                file =>
+                    `/uploads/${file.filename}`
+            );
+
+        event.photos = [
+            ...(event.photos || []),
+            ...newPhotos
+        ];
+
+        writeEvents(events);
+
+        res.json({
+            success: true,
+            event
+        });
+    }
+);
+
+app.delete(
+    "/api/admin/past/:id",
+    requireAdmin,
+    (req, res) => {
+        const events = readEvents();
+
+        const index =
+            events.past.findIndex(
+                event =>
+                    event.id ===
+                    req.params.id
+            );
+
+        if (index === -1) {
+            return res.status(404).json({
+                error:
+                    "Past event not found."
+            });
+        }
+
+        const [event] =
+            events.past.splice(
+                index,
+                1
+            );
+
+        (event.photos || []).forEach(
+            deleteLocalFile
+        );
+
+        writeEvents(events);
+
+        res.json({
+            success: true
+        });
+    }
+);
+
+app.delete(
+    "/api/admin/past/:id/photos",
+    requireAdmin,
+    (req, res) => {
+        const photo =
+            String(req.body.photo || "");
+
+        const events = readEvents();
+
+        const event =
+            events.past.find(
+                item =>
+                    item.id === req.params.id
+            );
+
+        if (!event) {
+            return res.status(404).json({
+                error:
+                    "Past event not found."
+            });
+        }
+
+        event.photos =
+            (event.photos || []).filter(
+                item => item !== photo
+            );
+
+        deleteLocalFile(photo);
+
+        writeEvents(events);
+
+        res.json({
+            success: true
+        });
+    }
+);
+
+/* --------------------------------------------------
+   STATIC FILES
+-------------------------------------------------- */
+
+app.use(
+    express.static(PUBLIC_DIR)
+);
+
+/*
+   IMPORTANT:
+   Do NOT use app.get("*", ...) with Express 5.
+*/
+
+app.get("/admin.html", requireAdmin, (_req, res) => {
+    res.sendFile(
+        path.join(
+            PUBLIC_DIR,
+            "admin.html"
+        )
+    );
 });
 
-app.get("/api/admin/status", (req, res) => {
-  res.json({ authenticated: Boolean(req.session && req.session.isAdmin) });
-});
-
-app.post("/api/admin/events", requireAdmin, upload.array("images", 30), (req, res) => {
-  const title = String(req.body.title || "").trim();
-  const date = String(req.body.date || "").trim();
-  const description = String(req.body.description || "").trim();
-
-  if (!title || !date) {
-    (req.files || []).forEach(file => fs.unlinkSync(file.path));
-    return res.status(400).json({ error: "Event title and date are required." });
-  }
-
-  const event = {
-    id: crypto.randomUUID(),
-    title,
-    date,
-    description,
-    images: (req.files || []).map(file => `/uploads/${file.filename}`)
-  };
-
-  const events = readEvents();
-  events.push(event);
-  writeEvents(events);
-  res.status(201).json(event);
-});
-
-app.put("/api/admin/events/:id", requireAdmin, (req, res) => {
-  const events = readEvents();
-  const event = events.find(item => item.id === req.params.id);
-
-  if (!event) return res.status(404).json({ error: "Event not found." });
-
-  const title = String(req.body.title || "").trim();
-  const date = String(req.body.date || "").trim();
-  const description = String(req.body.description || "").trim();
-
-  if (!title || !date) {
-    return res.status(400).json({ error: "Event title and date are required." });
-  }
-
-  event.title = title;
-  event.date = date;
-  event.description = description;
-  writeEvents(events);
-  res.json(event);
-});
-
-app.post("/api/admin/events/:id/images", requireAdmin, upload.array("images", 30), (req, res) => {
-  const events = readEvents();
-  const event = events.find(item => item.id === req.params.id);
-
-  if (!event) {
-    (req.files || []).forEach(file => fs.unlinkSync(file.path));
-    return res.status(404).json({ error: "Event not found." });
-  }
-
-  event.images.push(...(req.files || []).map(file => `/uploads/${file.filename}`));
-  writeEvents(events);
-  res.json(event);
-});
-
-app.delete("/api/admin/events/:id/images/:imageName", requireAdmin, (req, res) => {
-  const events = readEvents();
-  const event = events.find(item => item.id === req.params.id);
-
-  if (!event) return res.status(404).json({ error: "Event not found." });
-
-  const imageUrl = `/uploads/${req.params.imageName}`;
-  if (!event.images.includes(imageUrl)) {
-    return res.status(404).json({ error: "Image not found." });
-  }
-
-  event.images = event.images.filter(image => image !== imageUrl);
-  removeUploadedFile(imageUrl);
-  writeEvents(events);
-  res.json(event);
-});
-
-app.delete("/api/admin/events/:id", requireAdmin, (req, res) => {
-  const events = readEvents();
-  const index = events.findIndex(item => item.id === req.params.id);
-
-  if (index === -1) return res.status(404).json({ error: "Event not found." });
-
-  const [event] = events.splice(index, 1);
-  event.images.forEach(removeUploadedFile);
-  writeEvents(events);
-  res.json({ success: true });
-});
+/* --------------------------------------------------
+   FALLBACK
+-------------------------------------------------- */
 
 app.use((req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    if (
+        req.method === "GET" &&
+        !req.path.startsWith("/api/")
+    ) {
+        return res.sendFile(
+            path.join(
+                PUBLIC_DIR,
+                "index.html"
+            )
+        );
+    }
+
+    res.status(404).json({
+        error: "Not found"
+    });
 });
 
-app.listen(PORT, () => {
-  console.log(`Peace Action Network site running at http://localhost:${PORT}`);
-  if (ADMIN_PASSWORD === "change-this-password") {
-    console.warn("WARNING: Set ADMIN_PASSWORD before putting this website online.");
-  }
-});
+/* --------------------------------------------------
+   START SERVER
+-------------------------------------------------- */
+
+app.listen(
+    PORT,
+    "0.0.0.0",
+    () => {
+        console.log(
+            `Peace Action Network server running on port ${PORT}`
+        );
+    }
+);
